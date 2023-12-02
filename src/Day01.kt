@@ -8,7 +8,7 @@ fun main() {
     part2(input).println()
 }
 
-fun checkExample1() {
+private fun checkExample1() {
     val example = listOf(
         "1abc2",
         "pqr3stu8vwx",
@@ -19,7 +19,7 @@ fun checkExample1() {
     check(part1(example) == expected)
 }
 
-fun checkExample2() {
+private fun checkExample2() {
     val example = listOf(
         "two1nine",
         "eightwothree",
@@ -33,7 +33,7 @@ fun checkExample2() {
     check(part2(example) == expected)
 }
 
-fun part1(input: List<String>): Int {
+private fun part1(input: List<String>): Int {
     return input.sumOf { str ->
         val firstDigit = str.find { it.isDigit() }
         val lastDigit = str.findLast { it.isDigit() }
@@ -41,7 +41,7 @@ fun part1(input: List<String>): Int {
     }
 }
 
-fun part2(input: List<String>): Int {
+private fun part2(input: List<String>): Int {
     return input.sumOf { str ->
         val firstDigit = findFirstDigit(str)
         val lastDigit = findFirstDigit(str, true)
