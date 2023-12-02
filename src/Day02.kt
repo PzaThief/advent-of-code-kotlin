@@ -25,8 +25,7 @@ private fun checkExample1() {
 private fun part1(givenCubeSet: Game.CubeSet, input: List<String>): Int {
     val games = Game.parse(input)
     return games.sumOf {
-        val cubeSet = it.getFewestPossibleCubeSet()
-        if (cubeSet.red <= givenCubeSet.red && cubeSet.green <= givenCubeSet.green && cubeSet.blue <= givenCubeSet.blue) {
+        if (it.isPossibleGame(givenCubeSet)) {
             it.id
         } else {
             0
@@ -64,6 +63,8 @@ private data class Game(
         val blue: Int
     ) {
         companion object {
+            const val CUBE_DELIMITER = ","
+
             fun parse(input: String): CubeSet {
                 var (red, green, blue) = listOf(0, 0, 0)
                 input.split(CUBE_DELIMITER).forEach { cubeStr ->
@@ -81,8 +82,7 @@ private data class Game(
 
     companion object {
         const val GAME_DELIMITER = ":"
-        const val GAME_SET_DELIMITER = ";"
-        const val CUBE_DELIMITER = ","
+        const val CUBE_SET_DELIMITER = ";"
         fun parse(input: List<String>): List<Game> {
             return input.map {
                 parse(it)
@@ -91,7 +91,7 @@ private data class Game(
 
         fun parse(input: String): Game {
             val id = input.substringBefore(GAME_DELIMITER).substring("Game ".length).toInt()
-            val cubeSets = input.substringAfter(GAME_DELIMITER).split(GAME_SET_DELIMITER).map {
+            val cubeSets = input.substringAfter(GAME_DELIMITER).split(CUBE_SET_DELIMITER).map {
                 CubeSet.parse(it)
             }
             return Game(id, cubeSets)
@@ -106,5 +106,12 @@ private data class Game(
             blue = maxOf(blue, cube.blue)
         }
         return CubeSet(red, green, blue)
+    }
+
+    fun isPossibleGame(cubeSet: CubeSet): Boolean {
+        val fewestPossibleCubeSet = this.getFewestPossibleCubeSet()
+        return fewestPossibleCubeSet.red <= cubeSet.red &&
+                fewestPossibleCubeSet.green <= cubeSet.green &&
+                fewestPossibleCubeSet.blue <= cubeSet.blue
     }
 }
