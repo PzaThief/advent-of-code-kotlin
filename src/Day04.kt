@@ -39,16 +39,18 @@ private fun part1(input: List<String>): Int {
 }
 
 private fun part2(input: List<String>): Int {
+    var sum = 0
     val instanceByCard = mutableMapOf<Int, Int>()
     Day04Game.parse(input).onEachIndexed { index, game ->
-        instanceByCard.compute(index) { _, v -> if (v == null) 1 else v + 1 }
-        val instances = instanceByCard.getValue(index)
+        val instances = instanceByCard.getOrDefault(index, 0) + 1
         for (i in 1..game.matchedCount()) {
             instanceByCard.compute(index + i) { _, v -> if (v == null) instances else v + instances }
         }
+        sum += instances
+        instanceByCard.remove(index)
     }
 
-    return instanceByCard.values.sum()
+    return sum
 }
 
 private data class Day04Game(
