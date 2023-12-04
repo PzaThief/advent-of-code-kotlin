@@ -4,8 +4,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -30,7 +30,7 @@ private fun checkExample2() {
         "Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36",
         "Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
     )
-    val expected = 13
+    val expected = 30
     check(part2(example) == expected)
 }
 
@@ -39,8 +39,16 @@ private fun part1(input: List<String>): Int {
 }
 
 private fun part2(input: List<String>): Int {
-    var sum = 0
-    return sum
+    val instanceByCard = mutableMapOf<Int, Int>()
+    Day04Game.parse(input).onEachIndexed { index, game ->
+        instanceByCard.compute(index) { _, v -> if (v == null) 1 else v + 1 }
+        val instances = instanceByCard.getValue(index)
+        for (i in 1..game.matchedCount()) {
+            instanceByCard.compute(index + i) { _, v -> if (v == null) instances else v + instances }
+        }
+    }
+
+    return instanceByCard.values.sum()
 }
 
 private data class Day04Game(
@@ -60,14 +68,20 @@ private data class Day04Game(
 
         fun parse(str: String): Day04Game {
             val id = str.removePrefix(GAME_PREFIX).substringBefore(GAME_ID_DELIMITER).trim().toInt()
-            val winningNumbers = str.substringAfter(GAME_ID_DELIMITER).substringBefore(NUMBER_DELIMITER).trim().split(ONE_OR_MORE_SPACE).map { it.toInt() }
+            val winningNumbers =
+                str.substringAfter(GAME_ID_DELIMITER).substringBefore(NUMBER_DELIMITER).trim().split(ONE_OR_MORE_SPACE)
+                    .map { it.toInt() }
             val havingNumbers = str.substringAfter(NUMBER_DELIMITER).trim().split(ONE_OR_MORE_SPACE).map { it.toInt() }
             return Day04Game(id, winningNumbers.toSet(), havingNumbers.toSet())
         }
     }
 
     fun getPoint(): Int {
-        val matched = winningNumbers.intersect(havingNumbers).count()
-        return if (matched != 0) 1.shl(matched - 1) else 0
+        val cnt = matchedCount()
+        return if (cnt != 0) 1.shl(cnt - 1) else 0
+    }
+
+    fun matchedCount(): Int {
+        return winningNumbers.intersect(havingNumbers).count()
     }
 }
