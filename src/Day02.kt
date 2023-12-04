@@ -1,6 +1,6 @@
 fun main() {
     val input = readInput("Day02")
-    val givenCubeSet = Game.CubeSet(12, 13, 14)
+    val givenCubeSet = Day02Game.CubeSet(12, 13, 14)
 
     checkExample1()
     part1(givenCubeSet, input).println()
@@ -17,13 +17,13 @@ private fun checkExample1() {
         "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
         "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
     )
-    val givenCubeSet = Game.CubeSet(12, 13, 14)
+    val givenCubeSet = Day02Game.CubeSet(12, 13, 14)
     val expected = 1 + 2 + 5
     check(part1(givenCubeSet, example) == expected)
 }
 
-private fun part1(givenCubeSet: Game.CubeSet, input: List<String>): Int {
-    val games = Game.parse(input)
+private fun part1(givenCubeSet: Day02Game.CubeSet, input: List<String>): Int {
+    val games = Day02Game.parse(input)
     return games.sumOf {
         if (it.isPossibleGame(givenCubeSet)) {
             it.id
@@ -46,14 +46,14 @@ private fun checkExample2() {
 }
 
 private fun part2(input: List<String>): Int {
-    val games = Game.parse(input)
+    val games = Day02Game.parse(input)
     return games.sumOf {
         val maximumCubes = it.getFewestPossibleCubeSet()
         maximumCubes.red * maximumCubes.green * maximumCubes.blue
     }
 }
 
-private data class Game(
+private data class Day02Game(
     val id: Int,
     val sets: List<CubeSet>
 ) {
@@ -83,18 +83,18 @@ private data class Game(
     companion object {
         const val GAME_DELIMITER = ":"
         const val CUBE_SET_DELIMITER = ";"
-        fun parse(input: List<String>): List<Game> {
+        fun parse(input: List<String>): List<Day02Game> {
             return input.map {
                 parse(it)
             }
         }
 
-        fun parse(input: String): Game {
+        fun parse(input: String): Day02Game {
             val id = input.substringBefore(GAME_DELIMITER).substring("Game ".length).toInt()
             val cubeSets = input.substringAfter(GAME_DELIMITER).split(CUBE_SET_DELIMITER).map {
                 CubeSet.parse(it)
             }
-            return Game(id, cubeSets)
+            return Day02Game(id, cubeSets)
         }
     }
 
