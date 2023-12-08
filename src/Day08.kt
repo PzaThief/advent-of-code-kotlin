@@ -4,8 +4,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -35,7 +35,21 @@ private fun checkExample1() {
 }
 
 private fun checkExample2() {
+    val example1 = listOf(
+        "LR",
+        " ",
+        "11A = (11B, XXX)",
+        "11B = (XXX, 11Z)",
+        "11Z = (11B, XXX)",
+        "22A = (22B, XXX)",
+        "22B = (22C, 22C)",
+        "22C = (22Z, 22Z)",
+        "22Z = (22B, 22B)",
+        "XXX = (XXX, XXX)",
 
+    )
+    val expected1 = 6L
+    check(part2(example1) == expected1)
 }
 
 private fun part1(input: List<String>): Int {
@@ -43,8 +57,9 @@ private fun part1(input: List<String>): Int {
     return network.getStepTo("ZZZ")
 }
 
-private fun part2(input: List<String>): Int {
-    return 0
+private fun part2(input: List<String>): Long {
+    val network = Day08Network.parse(input)
+    return network.getStepToMultipleCursor('Z')
 }
 
 private data class Day08Network(
@@ -77,4 +92,29 @@ private data class Day08Network(
         }
         return step
     }
+
+    fun getStepToMultipleCursor(destinationSuffix: Char): Long {
+        var currentNodeNames = nodes.keys.filter { it.last() == 'A' }
+        var step = 0L
+
+        val cycles = LongArray(currentNodeNames.size) { -1 }
+        while (cycles.any { it < 0 }) {
+            currentNodeNames = currentNodeNames.mapIndexed { index, nodeName ->
+                val next = if (navigator[step.toInt() % navigator.length] == 'L') {
+                    nodes[nodeName]!!.first
+                } else {
+                    nodes[nodeName]!!.second
+                }
+                if (next.last() == destinationSuffix && cycles[index] < 0) {
+                    cycles[index] = step + 1L
+                }
+                next
+            }
+            step++
+        }
+        return cycles.reduce { acc, n -> lcm(acc, n) }
+    }
 }
+
+private fun gcd(a: Long, b: Long): Long = if (b == 0L) a else gcd(b, a % b)
+private fun lcm(a: Long, b: Long): Long = (a * b) / gcd(a, b)
