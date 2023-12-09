@@ -6,8 +6,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -21,6 +21,13 @@ private fun checkExample1() {
 }
 
 private fun checkExample2() {
+    val example = listOf(
+        "0 3 6 9 12 15",
+        "1 3 6 10 15 21",
+        "10 13 16 21 30 45",
+    )
+    val expected = 2L
+    check(part2(example).also { println(it) } == expected)
 }
 
 private fun part1(input: List<String>): Long {
@@ -28,7 +35,7 @@ private fun part1(input: List<String>): Long {
 }
 
 private fun part2(input: List<String>): Long {
-    return 0
+    return Day09Oasis.parse(input).beforeNumbers().sum()
 }
 
 private data class Day09Oasis(
@@ -39,8 +46,13 @@ private data class Day09Oasis(
             return Day09Oasis(input.map { it.split(' ').map { it.toLong() } })
         }
     }
+
     fun nextNumbers(): List<Long> {
         return reports.map { interpolate(it, it.size) }
+    }
+
+    fun beforeNumbers(): List<Long> {
+        return reports.map { interpolate(it, -1) }
     }
 
     private fun interpolate(sequence: List<Long>, xi: Int): Long {
