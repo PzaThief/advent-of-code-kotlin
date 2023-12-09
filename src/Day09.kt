@@ -1,5 +1,3 @@
-import java.math.BigInteger
-
 fun main() {
     val input = readInput("Day09")
 
@@ -17,7 +15,7 @@ private fun checkExample1() {
         "10 13 16 21 30 45",
     )
     val expected = 114L
-    check(part1(example).also { println(it) } == expected)
+    check(part1(example) == expected)
 }
 
 private fun checkExample2() {
@@ -27,7 +25,7 @@ private fun checkExample2() {
         "10 13 16 21 30 45",
     )
     val expected = 2L
-    check(part2(example).also { println(it) } == expected)
+    check(part2(example) == expected)
 }
 
 private fun part1(input: List<String>): Long {
@@ -56,20 +54,16 @@ private data class Day09Oasis(
     }
 
     private fun interpolate(sequence: List<Long>, xi: Int): Long {
-        var result = BigInteger.ZERO
-
+        var result = 0F
         for (i in sequence.indices) {
-            var num = BigInteger.ONE
-            var den = BigInteger.ONE
+            var term = sequence[i].toFloat()
             for (j in sequence.indices) {
                 if (j != i) {
-                    num *= (xi - j).toBigInteger()
-                    den *= (i - j).toBigInteger()
+                    term *= (xi - j) / (i - j).toFloat()
                 }
             }
-            result += num / den * sequence[i].toBigInteger()
+            result += term
         }
-
         return result.toLong()
     }
 
