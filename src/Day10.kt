@@ -1,11 +1,13 @@
+import kotlin.math.absoluteValue
+
 fun main() {
     val input = readInput("Day10")
 
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -21,7 +23,20 @@ private fun checkExample1() {
 }
 
 private fun checkExample2() {
-
+    val example = listOf(
+        "FF7FSF7F7F7F7F7F---7",
+        "L|LJ||||||||||||F--J",
+        "FL-7LJLJ||||||LJL-77",
+        "F--JF--7||LJLJIF7FJ-",
+        "L---JF-JLJIIIIFJLJJ7",
+        "|F|F-JF---7IIIL7L|7|",
+        "|FFJF7L7F-JF7IIL---7",
+        "7-L-JL7||F7|L7F-7F7|",
+        "L.L7LFJ|||||FJL7||LJ",
+        "L7JLJL-JLJLJL--JLJ.L",
+    )
+    val expected = 10
+    check(part2(example) == expected)
 }
 
 private fun part1(input: List<String>): Int {
@@ -30,7 +45,13 @@ private fun part1(input: List<String>): Int {
 }
 
 private fun part2(input: List<String>): Int {
-    return 0
+    val grid = Day10Grid(input.map { it.toList() })
+    val path = grid.findPath()
+    val loopSize = 1 + (path.asSequence().plus(path[0]).zipWithNext { (y0, x0), (y1, x1) ->
+        x0 * y1 - x1 * y0
+    }.sum().absoluteValue - path.size) / 2
+
+    return loopSize
 }
 
 private class Day10Grid(val grid: List<List<Char>>) {
