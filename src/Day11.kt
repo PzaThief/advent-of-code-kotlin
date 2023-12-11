@@ -5,8 +5,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -22,21 +22,35 @@ private fun checkExample1() {
         ".......#..",
         "#...#.....",
     )
-    val expected = 374
+    val expected = 374L
     check(part1(example) == expected)
 }
 
 private fun checkExample2() {
-
+    val example = listOf(
+        "...#......",
+        ".......#..",
+        "#.........",
+        "..........",
+        "......#...",
+        ".#........",
+        ".........#",
+        "..........",
+        ".......#..",
+        "#...#.....",
+    )
+    val expected = 8410L
+    check(Day11Universe(example.map { it.toList() }).distances(100).sum() == expected)
 }
 
-private fun part1(input: List<String>): Int {
+private fun part1(input: List<String>): Long {
     val universe = Day11Universe(input.map { it.toList() })
-    return universe.distances().sum()
+    return universe.distances(2).sum()
 }
 
-private fun part2(input: List<String>): Int {
-    return 0
+private fun part2(input: List<String>): Long {
+    val universe = Day11Universe(input.map { it.toList() })
+    return universe.distances(1000000).sum()
 }
 
 private class Day11Universe(val grid: List<List<Char>>) {
@@ -50,12 +64,12 @@ private class Day11Universe(val grid: List<List<Char>>) {
         }
     }
 
-    fun distances(): List<Int> = galaxies.withIndex().flatMap { (i, galaxy) ->
+    fun distances(factor: Long): List<Long> = galaxies.withIndex().flatMap { (i, galaxy) ->
         val (y0, x0) = galaxy
         galaxies.subList(i + 1, galaxies.size).map { (y1, x1) ->
             val emptyRowsBetween = abs(emptyRows.binarySearch { it - y0 } - emptyRows.binarySearch { it - y1 })
             val emptyColsBetween = abs(emptyCols.binarySearch { it - x0 } - emptyCols.binarySearch { it - x1 })
-            val expendEffect = emptyRowsBetween + emptyColsBetween
+            val expendEffect = (factor - 1) * (emptyRowsBetween + emptyColsBetween)
             abs(y1 - y0) + abs(x1 - x0) + expendEffect
         }
     }
