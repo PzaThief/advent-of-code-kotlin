@@ -4,8 +4,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -31,7 +31,25 @@ private fun checkExample1() {
 }
 
 private fun checkExample2() {
-
+    val example = listOf(
+        "#.##..##.",
+        "..#.##.#.",
+        "##......#",
+        "##......#",
+        "..#.##.#.",
+        "..##..##.",
+        "#.#.##.#.",
+        "",
+        "#...##..#",
+        "#....#..#",
+        "..##..###",
+        "#####.##.",
+        "#####.##.",
+        "..##..###",
+        "#....#..#",
+    )
+    val expected = 400
+    check(part2(example) == expected)
 }
 
 private fun part1(input: List<String>): Int {
@@ -39,8 +57,9 @@ private fun part1(input: List<String>): Int {
     return spring.summarizedNotes().sum()
 }
 
-private fun part2(input: List<String>): Long {
-    return 0
+private fun part2(input: List<String>): Int {
+    val spring = Day13Valley.parse(input)
+    return spring.summarizedNotesWithFixSmudge().sum()
 }
 
 private class Day13Valley(val patterns: List<List<String>>) {
@@ -71,6 +90,37 @@ private class Day13Valley(val patterns: List<List<String>>) {
             val verticalReflections = verticalReflectionCandidates.filter { base ->
                 val range = if (base < pattern.first().length / 2) 0..base else 0..<pattern.first().lastIndex - base
                 range.all { gap -> pattern.all { it[base + gap + 1] == it[base - gap] } }
+            }
+            summary += verticalReflections.sumOf { it + 1 }
+
+            summary
+        }
+    }
+
+    fun summarizedNotesWithFixSmudge(): List<Int> {
+        return patterns.map { pattern ->
+            var summary = 0
+            val byteRows = pattern.map { it.map { if (it == '#') '1' else '0' }.joinToString("").toInt(2) }
+            val horizontalReflections = (0..<pattern.lastIndex).filter { base ->
+                val range = if (base < pattern.size / 2) 0..base else 0..<pattern.lastIndex - base
+                var diffs = 0
+                for (gap in range) {
+                    diffs += byteRows[base + gap + 1].xor(byteRows[base - gap]).countOneBits()
+                    if (diffs > 1) return@filter false
+                }
+                return@filter diffs == 1
+            }
+            summary += horizontalReflections.sumOf { it + 1 } * 100
+
+            val byteColumns = pattern.first().indices.map { column -> pattern.map { if (it[column] == '#') '1' else '0' }.joinToString("").toInt(2) }
+            val verticalReflections = (0..<pattern.first().lastIndex).filter { base ->
+                val range = if (base < pattern.first().length / 2) 0..base else 0..<pattern.first().lastIndex - base
+                var diffs = 0
+                for (gap in range) {
+                    diffs += byteColumns[base + gap + 1].xor(byteColumns[base - gap]).countOneBits()
+                    if (diffs > 1) return@filter false
+                }
+                return@filter diffs == 1
             }
             summary += verticalReflections.sumOf { it + 1 }
 
