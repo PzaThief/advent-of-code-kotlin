@@ -4,8 +4,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -26,6 +26,20 @@ private fun checkExample1() {
 }
 
 private fun checkExample2() {
+    val example = listOf(
+        ".|...\\....",
+        "|.-.\\.....",
+        ".....|-...",
+        "........|.",
+        "..........",
+        ".........\\",
+        "..../.\\\\..",
+        ".-.-/..|..",
+        ".|....-|.\\",
+        "..//.|....",
+    )
+    val expected = 51
+    check(part2(example) == expected)
 }
 
 private fun part1(input: List<String>): Int {
@@ -34,7 +48,8 @@ private fun part1(input: List<String>): Int {
 }
 
 private fun part2(input: List<String>): Int {
-    return 0
+    val floor = Day16Floor(input)
+    return floor.calculateEnergizedTilesFromWalls()
 }
 
 private class Day16Floor(val grid: List<String>) {
@@ -64,6 +79,19 @@ private class Day16Floor(val grid: List<String>) {
             Direction.R to '\\' to listOf(Direction.D),
             Direction.R to '|' to listOf(Direction.U, Direction.D),
         )
+    }
+
+    fun calculateEnergizedTilesFromWalls(): Int {
+        val energizedByWalls = mutableListOf<Int>()
+        for (column in 0..grid.first().lastIndex) {
+            energizedByWalls.add(calculateEnergizedTiles(Pair(0, column), Direction.D)) // from upper
+            energizedByWalls.add(calculateEnergizedTiles(Pair(grid.lastIndex, column), Direction.U)) // from lower
+        }
+        for ((row, line) in grid.withIndex()) {
+            energizedByWalls.add(calculateEnergizedTiles(Pair(row, 0), Direction.R)) // from left
+            energizedByWalls.add(calculateEnergizedTiles(Pair(row, line.lastIndex), Direction.L)) // from right
+        }
+        return energizedByWalls.max()
     }
 
     fun calculateEnergizedTiles(initialPoint: Pair<Int, Int> = Pair(0, 0), initialDirection: Direction = Direction.R): Int {
