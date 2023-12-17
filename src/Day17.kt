@@ -80,8 +80,8 @@ private class Day17City(val grid: List<List<Int>>) {
     fun leastHeatLoss(
         start: Pair<Int, Int> = Pair(0, 0),
         end: Pair<Int, Int> = Pair(grid.lastIndex, grid.last().lastIndex),
-        minimumContinuation:Int = 0,
-        maximumContinuation:Int = 3,
+        minimumContinuation: Int = 0,
+        maximumContinuation: Int = 3,
     ): Int {
         val visited = mutableSetOf<State>()
         val queue = PriorityQueue { t1: Pair<State, Int>, t2: Pair<State, Int> -> t1.second - t2.second }
@@ -94,11 +94,12 @@ private class Day17City(val grid: List<List<Int>>) {
             directionCandidates.forEach { direction ->
                 val next = direction.move(state.position)
                 if (isPositionInGrid(next)) {
+                    val nextAccumulate = accumulated + grid[next.first][next.second]
                     if (direction == state.direction && state.continuation < maximumContinuation) {
-                        queue.add(Pair(State(next, direction, state.continuation + 1), accumulated + grid[next.first][next.second]))
+                        queue.add(Pair(State(next, direction, state.continuation + 1), nextAccumulate))
                     }
                     if (direction != state.direction && state.continuation >= minimumContinuation) {
-                        queue.add(Pair(State(next, direction, 1), accumulated + grid[next.first][next.second]))
+                        queue.add(Pair(State(next, direction, 1), nextAccumulate))
                     }
                 }
             }
@@ -107,8 +108,6 @@ private class Day17City(val grid: List<List<Int>>) {
         return queue.peek().second - grid[start.first][start.second]
     }
 
-    fun isPositionInGrid(pair: Pair<Int, Int>): Boolean {
-        return (pair.first in grid.indices) && pair.second in grid.last().indices
-    }
+    fun isPositionInGrid(pair: Pair<Int, Int>) = (pair.first in grid.indices) && pair.second in grid.last().indices
 
 }
