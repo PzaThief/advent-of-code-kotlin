@@ -1,3 +1,7 @@
+import java.util.*
+import kotlin.math.max
+import kotlin.math.min
+
 fun main() {
     val input = readInput("Day19")
 
@@ -63,7 +67,7 @@ private fun part1(input: List<String>): Long {
 
 private fun part2(input: List<String>): Long {
     val system = Day19System.parse(input)
-    return system.countDistinctCombinations()
+    return system.countAcceptedCombinations()
 }
 
 private class Day19System(val workflows: Map<String, Workflow>, val parts: List<Map<Char, Int>>) {
@@ -143,8 +147,61 @@ private class Day19System(val workflows: Map<String, Workflow>, val parts: List<
 
     fun sumAcceptedPartsRatings() = acceptedParts().sumOf { it.values.sum().toLong() }
 
-    fun countDistinctCombinations(range: IntRange = 1..4000): Long {
-        return 0L
+    fun countAcceptedCombinations(range: IntRange = 1..4000): Long {
+        var combinations = 0L
+        val queue = LinkedList<Pair<Map<Char, List<IntRange>>, Workflow>>()
+        queue.offer(
+            mapOf(
+                'x' to listOf(range),
+                'm' to listOf(range),
+                'a' to listOf(range),
+                's' to listOf(range)
+            ) to workflows[START_WORKFLOW]!!
+        )
+        while (queue.isNotEmpty()) {
+            val partAndWorkflow = queue.pop()
+            val part = partAndWorkflow.first.toMutableMap()
+            partAndWorkflow.second.rules.forEach { rule ->
+                val queueRange = part[rule.category]!!.toMutableList()
+                val processedRanges = mutableSetOf<IntRange>()
+                var index = 0
+                while (queueRange.lastIndex >= index) {
+                    val categoryRange = queueRange[index]
+                    index++
 
+                    val intersectRange = max(categoryRange.first, rule.range.first)..min(categoryRange.last, rule.range.last)
+                    if (intersectRange.isEmpty()) continue
+                    processedRanges.add(categoryRange)
+
+                    val leftSide = categoryRange.first..<intersectRange.first
+                    if (!leftSide.isEmpty()) queueRange.add(leftSide)
+                    val rightSide = intersectRange.last + 1..categoryRange.last
+                    if (!rightSide.isEmpty()) queueRange.add(rightSide)
+
+                    if (rule.rating.accept == false) continue
+                    if (rule.rating.accept == true) {
+                        combinations += part.entries.fold(1L) { acc, it ->
+                            acc * if (it.key == rule.category) (intersectRange.last - intersectRange.first + 1)
+                            else it.value.sumOf { range -> range.last - range.first + 1 }
+                        }
+                        continue
+                    }
+
+                    val nextPart = part.mapValues {
+                        if (it.key != rule.category) it.value
+                        else listOf(intersectRange)
+                    }
+                    queue.offer(nextPart to workflows[rule.rating.next]!!)
+                }
+                part[rule.category] = queueRange.filter { it !in processedRanges }
+            }
+            if (partAndWorkflow.second.default.accept == true) {
+                combinations += part.entries.fold(1L) { acc, it -> acc * it.value.sumOf { range -> range.last - range.first + 1 } }
+            } else if (partAndWorkflow.second.default.next != null) {
+                queue.offer(part to workflows[partAndWorkflow.second.default.next]!!)
+            }
+        }
+
+        return combinations
     }
 }
