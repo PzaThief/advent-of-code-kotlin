@@ -6,8 +6,8 @@ fun main() {
     checkExample1()
     part1(input).println()
 
-//    checkExample2()
-//    part2(input).println()
+    checkExample2()
+    part2(input).println()
 }
 
 private fun checkExample1() {
@@ -41,7 +41,8 @@ private fun part1(input: List<String>): Long {
 }
 
 private fun part2(input: List<String>): Long {
-    return 0
+    val system = Day20System.parse(input)
+    return system.leastButtonPress(destination = "rx")
 }
 
 private class Day20System(val broadcaster: List<String>, val modules: Map<String, Module>) {
@@ -92,7 +93,6 @@ private class Day20System(val broadcaster: List<String>, val modules: Map<String
         const val PULSE_LOW = false
 
         fun parse(input: List<String>): Day20System {
-            println(input)
             val broadcasterIndex = input.indexOfFirst { it.startsWith("broadcaster") }
             val broadcaster = input[broadcasterIndex].substringAfter("-> ").split(", ")
             val modules = input.filterIndexed { i, _ -> i != broadcasterIndex }.associate {
@@ -109,15 +109,12 @@ private class Day20System(val broadcaster: List<String>, val modules: Map<String
     }
 
     fun outputPulse(pulse: Boolean = PULSE_LOW, times: Int = 1000): Long {
-        val highPulses = linkedMapOf<Int, Long>()
-        val lowPulses = linkedMapOf<Int, Long>()
+        var highPulse = 0L
+        var lowPulse = 0L
         var attempt = 0
         while (attempt < times) {
-            var highPulse = 0L
-            var lowPulse = 0L
             if (pulse == PULSE_HIGH) highPulse++ else lowPulse++
             val queue = LinkedList<Signal>()
-//            val path = mutableListOf<Signal>()
             queue.add(Signal(pulse, "button", broadcaster))
             while (queue.isNotEmpty()) {
                 val signal = queue.pop()
@@ -125,17 +122,44 @@ private class Day20System(val broadcaster: List<String>, val modules: Map<String
                     if (signal.pulse == PULSE_HIGH) highPulse++
                     else lowPulse++
 
-                    if (!modules.contains(input)) break
-                    val next = modules[input]!!.route(signal)
-                    if (next != null) queue.add(next)
+                    if (!modules.contains(input)) continue
+                    val next = modules[input]!!.route(signal) ?: continue
+                    queue.add(next)
                 }
-//                path.add(signal)
             }
             attempt++
-            if (highPulse != 0L) highPulses.compute(attempt) { _, v -> if (v == null) highPulse else v + highPulse }
-            if (lowPulse != 0L) lowPulses.compute(attempt) { _, v -> if (v == null) lowPulse else v + lowPulse }
         }
 
-        return highPulses.values.sum() * lowPulses.values.sum()
+        return highPulse * lowPulse
     }
+
+    fun leastButtonPress(pulse: Boolean = PULSE_LOW, destination: String): Long {
+        var attempt = 0L
+        var needPulse = PULSE_HIGH
+        var conjunctionsToDestination = modules.filter { it.value.outputs.contains(destination) }.values.map { it.name }.toMutableList()
+        while (conjunctionsToDestination.size == 1) {
+            needPulse = !needPulse
+            conjunctionsToDestination = modules[conjunctionsToDestination.first()]!!.memory.keys.toMutableList()
+        }
+        val conjunctionsToDestinationCycle = conjunctionsToDestination.associateWith { -1L }.toMutableMap()
+        while (conjunctionsToDestinationCycle.any { it.value == -1L }) {
+            attempt++
+            val queue = LinkedList<Signal>()
+            queue.add(Signal(pulse, "button", broadcaster))
+            while (queue.isNotEmpty()) {
+                val signal = queue.pop()
+                for (input in signal.to) {
+                    if (input in conjunctionsToDestinationCycle && signal.pulse == needPulse) conjunctionsToDestinationCycle[input] = attempt
+                    if (!modules.contains(input)) continue
+
+                    val next = modules[input]!!.route(signal) ?: continue
+                    queue.add(next)
+                }
+            }
+        }
+
+        return conjunctionsToDestinationCycle.values.reduce { acc, cycles -> lcm(acc, cycles) }
+    }
+    private tailrec fun gcd(x: Long, y: Long): Long = if (y == 0L) x else gcd(y, x % y)
+    private fun lcm(x: Long, y: Long) = x * y / gcd(x, y)
 }
