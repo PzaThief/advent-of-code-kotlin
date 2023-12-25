@@ -9,7 +9,7 @@ sourceSets {
 }
 
 dependencies {
-    implementation(rootProject.files("z3/com.microsoft.z3.jar"))
+    implementation(rootProject.files("lib/z3/com.microsoft.z3.jar"))
 }
 
 tasks {
